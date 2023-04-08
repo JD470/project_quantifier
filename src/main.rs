@@ -9,8 +9,8 @@ const WHITE: Color = Color::RGB(255, 255, 255);
 /// Get lines of code
 fn get_loc(files: Vec<String>) -> usize{
     let mut lines = 0;
-    for i in files{
-        let file = fs::read_to_string(i);
+    for file in files{
+        let file = fs::read_to_string(file);
         lines += file.unwrap().split('\n').collect::<Vec<&str>>().len();
     }
     lines
@@ -25,24 +25,26 @@ fn format_size(number: usize) -> String{
             biggest_name = i-1;
         }
     }
-    return format!("{:.2}{}", number as f64/10.0f64.powf((biggest_name as f64 +1.0)*3.0), size_names[biggest_name as usize].clone());
+    return format!("{:.2}{}", number as f64/10.0f64.powf((biggest_name as f64 + 1.0) * 3.0), size_names[biggest_name as usize]);
 }
 
 /// Get the number of characters in all the files
 fn get_size(files: Vec<String>) -> String{
     let mut size = 0;
-    for i in files{
-        size +=  fs::read_to_string(i).unwrap().len();
+    for file in files{
+        size +=  fs::read_to_string(file).unwrap().len();
     }
     return format_size(size)
 }
 
+/// Get the list of the number of files in certain formats
 fn get_nb_of_files(files: Vec<String>, formats: Vec<String>) -> Vec<u32>{
     formats.into_iter().map(|format|{
-        files.clone().into_iter().filter(|f| f.ends_with(format.as_str())).collect::<Vec<String>>().len() as u32
+        files.clone().into_iter().filter(|file| file.ends_with(format.as_str())).collect::<Vec<String>>().len() as u32
     }).collect()
 }
 
+/// Print the information about the files in the project
 fn print_info(files: Vec<String>, formats: Vec<String>){
     let lines = get_loc(files.clone());
     let size = get_size(files.clone());
@@ -54,8 +56,9 @@ fn print_info(files: Vec<String>, formats: Vec<String>){
 
     println!();
 
+    // Printing all the file formats, the number of files in that format, and the size of the files combined
     formats.iter().enumerate().map(|(index, format)| {
-        let formats_files_size = get_size(files.clone().iter().filter(|f| f.ends_with(format)).map(|f| f.to_string()).collect::<Vec<String>>());
+        let formats_files_size = get_size(files.iter().filter(|file| file.ends_with(format)).map(|f| f.to_string()).collect::<Vec<String>>());
         println!("Files {format}: {} {}", 
             VALUE.paint(format!("{}", nb_of_files[index])),
             IN_PARENTHESIS.paint(format!("[{}]", formats_files_size))
@@ -71,23 +74,22 @@ fn main() {
 	}
 
     let args: Vec<String> = env::args().collect();
-    let formats: Vec<String> = args.iter().enumerate().filter(|(i, _)| {
-        *i >= 1
-    }).map(|(_, e)| {
-        e.to_string()
+    let formats: Vec<String> = args.iter().enumerate().filter(|(index, _)| {
+        *index >= 1
+    }).map(|(_, format)| {
+        format.to_string()
     }).collect();
     
     let files: Vec<String> = WalkDir::new(".").into_iter().filter(|f| {
-            let name = f.as_ref().unwrap().path().to_str().unwrap();
-            for format in &formats{
-                if name.ends_with(format.as_str()){
-                    return true;
-                }
+        let name = f.as_ref().unwrap().path().to_str().unwrap();
+        for format in &formats{
+            if name.ends_with(format.as_str()){
+                return true;
             }
-            false
         }
-    ).map(|e| {
-        e.unwrap().path().to_str().unwrap().to_string()
+        false
+    }).map(|file| {
+        file.unwrap().path().to_str().unwrap().to_string()
     }).collect();
 
     print_info(files, formats);
