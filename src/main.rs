@@ -1,10 +1,11 @@
-use std::{env, fs};
-use ansi_term::Color;
-use walkdir::WalkDir;
+mod module;
+mod rust_fn_counter;
 
-const VALUE: Color = Color::RGB(0, 175, 255);
-const IN_PARENTHESIS: Color = Color::RGB(150, 150, 150);
-const WHITE: Color = Color::RGB(255, 255, 255);
+use module::*;
+use module::modules::*;
+
+use std::{env, fs};
+
 
 /// Get lines of code
 fn get_loc(files: Vec<String>) -> usize{
@@ -61,44 +62,32 @@ fn print_info(files: Vec<String>, formats: Vec<String>){
 
     // Printing all the file formats, the number of files in that format, and the size of the files combined
     formats.iter().enumerate().map(|(index, format)| {
-        let current_format_files: Vec<String> = files.iter().filter(|file| file.ends_with(format)).map(|file| file.to_string()).collect();
+        let current_format_files: Vec<String> = filter_files_vec_by_format(files.clone(), format.as_str());
         let formats_files_size = get_size(current_format_files.clone());
         let format_lines_of_code = get_loc(current_format_files);
-        
 
         println!("Files {format}: {} {} {}", 
             VALUE.paint(format!("{}", nb_of_files[index])),
-            IN_PARENTHESIS.paint(format!("[{}]", formats_files_size)),
-            IN_PARENTHESIS.paint(format!("{}", format_lines_of_code))
+            VALUE.paint(format!("[{}]", formats_files_size)),
+            VALUE.paint(format!("{}", format_lines_of_code))
         );
     }).for_each(drop);
+
+    println!("-------------------------------------------");
 }
 
 fn main() {
     cfg_if::cfg_if! {
-		if #[cfg(target_os = "windows")] {
-			output_vt100::init();
-		}
-	}
+        if #[cfg(target_os = "windows")] {
+            output_vt100::init();
+        }
+    }
 
     let args: Vec<String> = env::args().collect();
-    let formats: Vec<String> = args.iter().enumerate().filter(|(index, _)| {
-        *index >= 1
-    }).map(|(_, format)| {
-        format.to_string()
-    }).collect();
+    let formats: Vec<String> = get_formats(&args);
     
-    let files: Vec<String> = WalkDir::new(".").into_iter().filter(|f| {
-        let name = f.as_ref().unwrap().path().to_str().unwrap();
-        for format in &formats{
-            if name.ends_with(format.as_str()){
-                return true;
-            }
-        }
-        false
-    }).map(|file| {
-        file.unwrap().path().to_str().unwrap().to_string()
-    }).collect();
+    let files: Vec<String> = get_files(&formats);
 
-    print_info(files, formats);
+    print_info(files.clone(), formats.clone());
+    run_modules(files, formats);
 }
