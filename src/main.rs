@@ -56,12 +56,20 @@ fn print_info(files: Vec<String>, formats: Vec<String>){
 
     println!();
 
+    println!("File number | Size of files | Lines of code");
+    println!("-------------------------------------------");
+
     // Printing all the file formats, the number of files in that format, and the size of the files combined
     formats.iter().enumerate().map(|(index, format)| {
-        let formats_files_size = get_size(files.iter().filter(|file| file.ends_with(format)).map(|f| f.to_string()).collect::<Vec<String>>());
-        println!("Files {format}: {} {}", 
+        let current_format_files: Vec<String> = files.iter().filter(|file| file.ends_with(format)).map(|file| file.to_string()).collect();
+        let formats_files_size = get_size(current_format_files.clone());
+        let format_lines_of_code = get_loc(current_format_files);
+        
+
+        println!("Files {format}: {} {} {}", 
             VALUE.paint(format!("{}", nb_of_files[index])),
-            IN_PARENTHESIS.paint(format!("[{}]", formats_files_size))
+            IN_PARENTHESIS.paint(format!("[{}]", formats_files_size)),
+            IN_PARENTHESIS.paint(format!("{}", format_lines_of_code))
         );
     }).for_each(drop);
 }
