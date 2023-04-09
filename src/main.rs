@@ -1,49 +1,10 @@
-mod module;
-mod rust_fn_counter;
+mod shared;
+mod modules;
 
-use module::*;
-use module::modules::*;
+use shared::*;
+use shared::module_runner::*;
 
-use std::{env, fs};
-
-
-/// Get lines of code
-fn get_loc(files: Vec<String>) -> usize{
-    let mut lines = 0;
-    for file in files{
-        let file = fs::read_to_string(file);
-        lines += file.unwrap().split('\n').collect::<Vec<&str>>().len();
-    }
-    lines
-}
-
-/// Returns the number with its size name
-fn format_size(number: usize) -> String{
-    let size_names: Vec<String> = vec!["KB", "MB", "GB"].into_iter().map(|e| e.to_string()).collect();
-    let mut biggest_name = 0;
-    for i in 1..4{
-        if number > 10usize.pow(i*3){
-            biggest_name = i-1;
-        }
-    }
-    return format!("{:.2}{}", number as f64/10.0f64.powf((biggest_name as f64 + 1.0) * 3.0), size_names[biggest_name as usize]);
-}
-
-/// Get the number of characters in all the files
-fn get_size(files: Vec<String>) -> String{
-    let mut size = 0;
-    for file in files{
-        size +=  fs::read_to_string(file).unwrap().len();
-    }
-    return format_size(size)
-}
-
-/// Get the list of the number of files in certain formats
-fn get_nb_of_files(files: Vec<String>, formats: Vec<String>) -> Vec<u32>{
-    formats.into_iter().map(|format|{
-        files.clone().into_iter().filter(|file| file.ends_with(format.as_str())).collect::<Vec<String>>().len() as u32
-    }).collect()
-}
+use std::{env};
 
 /// Print the information about the files in the project
 fn print_info(files: Vec<String>, formats: Vec<String>){
@@ -89,5 +50,6 @@ fn main() {
     let files: Vec<String> = get_files(&formats);
 
     print_info(files.clone(), formats.clone());
+    
     run_modules(files, formats);
 }

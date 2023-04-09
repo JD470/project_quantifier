@@ -1,6 +1,6 @@
 use std::{env, fs};
 
-use crate::module::*;
+use crate::shared::*;
 use regex::Regex;
 
 pub struct FunctionCounter{
