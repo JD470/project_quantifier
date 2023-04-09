@@ -89,9 +89,11 @@ pub trait Run{
 
 pub mod module_runner{
     use crate::modules::rust_fn_counter::*;
+    use crate::modules::rust_dep_counter::*;
     use crate::shared::Run;
 
     pub fn run_modules(_: Vec<String>, formats: Vec<String>){
-        FunctionCounter{formats: formats}.run();
+        FunctionCounter{formats: formats.clone()}.run();
+        DepCounter{formats: formats}.run();
     }
 }

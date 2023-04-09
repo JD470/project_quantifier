@@ -10,6 +10,8 @@ ansi_term = "0.12.1"
 walkdir = "2.3.3"
 cfg-if = "1.0.0"
 regex = "1.7.3"
+serde = "1.0.159"
+serde_json = "1.0.95"
 
 [target.'cfg(windows)'.dependencies]
 output_vt100 = "0.1.3"
