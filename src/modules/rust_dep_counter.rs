@@ -1,4 +1,4 @@
-use std::process::Command;
+use std::{process::Command, collections::HashSet};
 
 use crate::shared::*;
 
@@ -12,28 +12,23 @@ pub struct DepCounter{
 impl DepCounter{
     fn get_dependencies(&self, project_path: &str) -> usize {
         let output = Command::new("cargo")
-                         .arg("metadata")
-                         .arg("--format-version=1")
-                         .arg("--manifest-path")
-                         .arg(project_path)
-                         .output()
-                         .unwrap();
+            .arg("metadata")
+            .arg("--format-version=1")
+            .arg("--manifest-path")
+            .arg(project_path)
+            .output()
+            .unwrap();
 
-        let stdout = str::from_utf8(&output.stdout).unwrap();
-        let metadata: Value = serde_json::from_str(stdout).unwrap();
-
+        let metadata: Value = serde_json::from_slice(&output.stdout).unwrap();
         let packages = metadata["packages"].as_array().unwrap();
-        let mut dependencies: Vec<&str> = Vec::new();
 
+        let mut dependencies: HashSet<&str> = HashSet::new();
         for package in packages {
-            let package_dependencies = package["dependencies"].as_array().expect("No dependencies found in package");
+            let package_dependencies = package["dependencies"].as_array().unwrap();
 
             for dep in package_dependencies {
                 let name = dep["name"].as_str().unwrap();
-
-                if !dependencies.contains(&name) {
-                    dependencies.push(name);
-                }
+                dependencies.insert(name);
             }
         }
         dependencies.len()
