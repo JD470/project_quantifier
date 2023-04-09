@@ -46,9 +46,8 @@ fn main() {
 
     let args: Vec<String> = env::args().collect();
     let formats: Vec<String> = get_formats(&args);
-    
     let files: Vec<String> = get_files(&formats);
-
+    
     print_info(files.clone(), formats.clone());
     
     run_modules(files, formats);

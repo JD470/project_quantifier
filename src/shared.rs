@@ -4,9 +4,9 @@
 
 use std::fs;
 
-use regex::Regex;
-use walkdir::WalkDir;
+use regex_automata::dfa;
 use ansi_term::Color;
+use walkdir::WalkDir;
 
 pub const VALUE: Color = Color::RGB(0, 175, 255);
 pub const WHITE: Color = Color::RGB(255, 255, 255);
@@ -84,13 +84,14 @@ pub fn filter_files_vec_by_format(files: Vec<String>, format: &str) -> Vec<Strin
     files.iter().filter(|file| file.ends_with(format)).map(|file| file.to_string()).collect()
 }
 
-pub fn count_captures(re: Regex, files: &Vec<String>) -> u32{
+pub fn count_captures(expr: &str, files: &Vec<String>) -> u32{
+    let re = dfa::regex::Regex::new(expr).unwrap();
     let mut counter = 0;
 
     for file in files{
         let file_content = fs::read_to_string(file).unwrap();
 
-        counter += re.captures_iter(&file_content).count();
+        counter += re.find_earliest_iter(&file_content.as_bytes()).count();
     }
 
     counter as u32
