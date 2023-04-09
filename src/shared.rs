@@ -2,8 +2,9 @@
  * This file is meant to be shared between the main function and the modules made
  */
 
-use std::fs;
+use std::{fs, env};
 
+use regex::Regex;
 use walkdir::WalkDir;
 use ansi_term::Color;
 
@@ -81,6 +82,21 @@ pub fn get_formats(args: &Vec<String>) -> Vec<String> {
 
 pub fn filter_files_vec_by_format(files: Vec<String>, format: &str) -> Vec<String>{
     files.iter().filter(|file| file.ends_with(format)).map(|file| file.to_string()).collect()
+}
+
+pub fn count_captures(re: Regex) -> u32{
+    let args: Vec<String> = env::args().collect();
+    let formats = get_formats(&args);
+    let files = filter_files_vec_by_format(get_files(&formats), ".rs");
+
+    let mut counter = 0;
+
+    for file in files{
+        let file_content = fs::read_to_string(file).unwrap();
+
+        counter += re.captures_iter(&file_content).count();
+    }
+    counter as u32
 }
 
 pub trait Run{
