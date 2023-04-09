@@ -4,7 +4,7 @@ mod modules;
 use shared::*;
 use shared::module_runner::*;
 
-use std::{env};
+use std::env;
 
 /// Print the information about the files in the project
 fn print_info(files: Vec<String>, formats: Vec<String>){
