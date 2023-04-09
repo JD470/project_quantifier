@@ -21,6 +21,15 @@ pub fn get_loc(files: Vec<String>) -> usize{
 }
 
 /// Returns the number with its size name
+/// 
+/// Example: 
+/// 
+/// 1 000 = 1.00KB
+/// 
+/// 1 000 000 = 1.00MB
+/// 
+/// 1 000 000 000 = 1.00GB
+/// 
 pub fn format_size(number: usize) -> String{
     let size_names: Vec<String> = vec!["KB", "MB", "GB"].into_iter().map(|e| e.to_string()).collect();
     let mut biggest_name = 0;
@@ -44,13 +53,13 @@ pub fn get_size(files: Vec<String>) -> String{
 /// Get the list of the number of files in certain formats
 pub fn get_nb_of_files(files: Vec<String>, formats: Vec<String>) -> Vec<u32>{
     formats.into_iter().map(|format|{
-        files.clone().into_iter().filter(|file| file.ends_with(format.as_str())).collect::<Vec<String>>().len() as u32
+        filter_files_vec_by_format(files.clone(), &format).len() as u32
     }).collect()
 }
 
 pub fn get_files(formats: &Vec<String>) -> Vec<String> {
-    WalkDir::new(".").into_iter().filter(|f| {
-        let name = f.as_ref().unwrap().path().to_str().unwrap();
+    WalkDir::new(".").into_iter().filter(|project_folder| {
+        let name = project_folder.as_ref().unwrap().path().to_str().unwrap();
         for format in formats{
             if name.ends_with(format.as_str()){
                 return true;
