@@ -2,7 +2,7 @@
  * This file is meant to be shared between the main function and the modules made
  */
 
-use std::{fs, env};
+use std::fs;
 
 use regex::Regex;
 use walkdir::WalkDir;
@@ -84,11 +84,7 @@ pub fn filter_files_vec_by_format(files: Vec<String>, format: &str) -> Vec<Strin
     files.iter().filter(|file| file.ends_with(format)).map(|file| file.to_string()).collect()
 }
 
-pub fn count_captures(re: Regex) -> u32{
-    let args: Vec<String> = env::args().collect();
-    let formats = get_formats(&args);
-    let files = filter_files_vec_by_format(get_files(&formats), ".rs");
-
+pub fn count_captures(re: Regex, files: &Vec<String>) -> u32{
     let mut counter = 0;
 
     for file in files{
@@ -96,6 +92,7 @@ pub fn count_captures(re: Regex) -> u32{
 
         counter += re.captures_iter(&file_content).count();
     }
+
     counter as u32
 }
 
@@ -108,8 +105,8 @@ pub mod module_runner{
     use crate::modules::rust_dep_counter::*;
     use crate::shared::Run;
 
-    pub fn run_modules(_: Vec<String>, formats: Vec<String>){
-        FunctionCounter{formats: formats.clone()}.run();
+    pub fn run_modules(files: Vec<String>, formats: Vec<String>){
+        FunctionCounter{formats: formats.clone(), files: files}.run();
         DepCounter{formats: formats}.run();
     }
 }

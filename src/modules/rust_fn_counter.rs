@@ -1,19 +1,18 @@
-use std::{env, fs};
-
 use crate::shared::*;
 use regex::Regex;
 
 pub struct FunctionCounter{
-    pub formats: Vec<String>
+    pub formats: Vec<String>,
+    pub files: Vec<String>,
 }
 
 impl FunctionCounter {
     fn get_function_counter(&self) -> u32{
-        count_captures(Regex::new(r"fn\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(([^)]*)\)\s*(->\s*([^{\n;]+))?\s*\{").unwrap())
+        count_captures(Regex::new(r"fn\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(([^)]*)\)\s*(->\s*([^{\n;]+))?\s*\{").unwrap(), &self.files)
     }
     
     fn get_struct_counter(&self) -> u32{
-        count_captures(Regex::new(r"pub\s*struct\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\{([^}]*)\}").unwrap())
+        count_captures(Regex::new(r"pub\s*struct\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\{([^}]*)\}").unwrap(), &self.files)
     }
 }
 
