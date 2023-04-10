@@ -2,7 +2,7 @@ mod shared;
 mod modules;
 
 use shared::*;
-use shared::module_runner::*;
+use modules::*;
 
 use std::env;
 
