@@ -1,7 +1,7 @@
 use std::fs;
 
 use ansi_term::Color;
-use walkdir::WalkDir;
+use jwalk::WalkDir;
 
 pub const VALUE: Color = Color::RGB(0, 175, 255);
 pub const WHITE: Color = Color::RGB(255, 255, 255);
@@ -60,7 +60,7 @@ fn contains_string(text: &str, needle: &str) -> bool {
 }
 
 /// Get lines of code
-pub fn get_loc(files: &Vec<String>) -> usize {
+pub fn get_loc(files: &[String]) -> usize {
     let mut lines: usize = 0;
     for file in files {
         let file = fs::read_to_string(file);
@@ -90,7 +90,7 @@ pub fn format_size_bytes(number: usize) -> String {
             biggest_name = i - 1;
         }
     }
-    
+
     format!(
         "{:.2}{}",
         number as f64 / 10.0f64.powf((biggest_name as f64 + 1.0) * 3.0),
@@ -104,7 +104,7 @@ pub fn get_size(files: &[String]) -> String {
     for file in files {
         size += fs::read_to_string(file).unwrap().len();
     }
-    
+
     format_size_bytes(size)
 }
 
@@ -120,9 +120,9 @@ pub fn get_files(formats: &[String]) -> Vec<String> {
     WalkDir::new(".")
         .into_iter()
         .filter(|project_folder| {
-            let name = project_folder.as_ref().unwrap().path().to_str().unwrap();
+            let name = project_folder.as_ref().unwrap().path();
 
-            formats.iter().any(|format| name.ends_with(format))
+            formats.iter().any(|format| name.to_str().unwrap().ends_with(format))
         })
         .map(|file| file.unwrap().path().to_str().unwrap().to_string())
         .collect()
