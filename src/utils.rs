@@ -82,22 +82,18 @@ pub fn get_loc(files: &[String]) -> usize {
 /// 1 000 000 000 = 1.00GB
 ///
 pub fn format_size_bytes(number: usize) -> String {
-    let size_names: Vec<String> = vec!["KB", "MB", "GB"]
-        .into_iter()
-        .map(|e| e.to_string())
-        .collect();
-    let mut biggest_name = 0;
-    for i in 1..4 {
-        if number > 10usize.pow(i * 3) {
-            biggest_name = i - 1;
-        }
-    }
+    let size_names: Vec<&str> = vec!["B", "KB", "MB", "GB"];
+    let biggest_name = (number as f64).log(1024f64).floor() as usize;
 
-    format!(
-        "{:.2}{}",
-        number as f64 / 10.0f64.powf((biggest_name as f64 + 1.0) * 3.0),
-        size_names[biggest_name as usize]
-    )
+    if biggest_name == 0 {
+        format!("{}{}", number, size_names[biggest_name])
+    } else {
+        format!(
+            "{:.2}{}",
+            (number as f64) / 1024f64.powf(biggest_name as f64),
+            size_names[biggest_name as usize]
+        )
+    }
 }
 
 /// Get the number of characters in all the files
@@ -110,18 +106,10 @@ pub fn get_size(files: &[String]) -> String {
     format_size_bytes(size)
 }
 
-/// Get the list of the number of files in certain formats
-pub fn get_nb_of_files(files: &[String], formats: &[String]) -> Vec<u32> {
-    formats
-        .iter()
-        .map(|format| filter_files_by_format(files, format).len() as u32)
-        .collect()
-}
-
 pub fn get_files(formats: &[String]) -> Vec<String> {
     let languages: Vec<Languages> = formats
         .iter()
-        .map(|a| Languages::from(a.to_string()))
+        .map(|a| Languages::from(&a.to_string()))
         .collect();
 
     let mut first_depth_files: Vec<PathBuf> = WalkDir::new(".")

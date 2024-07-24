@@ -1,6 +1,7 @@
 mod languages;
 mod utils;
 
+use languages::Languages;
 use utils::*;
 
 use std::env;
@@ -9,7 +10,6 @@ use std::env;
 fn print_info(files: Vec<String>, formats: Vec<String>) {
     let lines = get_loc(&files);
     let size = get_size(&files);
-    let nb_of_files = get_nb_of_files(&files, &formats);
 
     println!("{}", WHITE.bold().paint("[Project Quantifier]"));
     println!("Lines of code: {}", VALUE.paint(lines.to_string()));
@@ -23,18 +23,21 @@ fn print_info(files: Vec<String>, formats: Vec<String>) {
     // Printing all the file formats, the number of files in that format, and the size of the files combined
     formats
         .iter()
-        .enumerate()
-        .map(|(index, format)| {
+        .map(|format| {
             let current_format_files: Vec<String> = filter_files_by_format(&files, format.as_str());
             let formats_files_size = get_size(&current_format_files);
             let format_lines_of_code = get_loc(&current_format_files);
+            let language = Languages::from(&format);
 
-            println!(
-                "Files {format}: {} {} {}",
-                VALUE.paint(format!("{}", nb_of_files[index])),
-                VALUE.paint(format!("[{}]", formats_files_size)),
-                VALUE.paint(format!("{}", format_lines_of_code))
-            );
+            if current_format_files.len() > 0 {
+                println!(
+                    "{}: {} {} {}",
+                    language.get_name(),
+                    VALUE.paint(format!("{}", current_format_files.len())),
+                    VALUE.paint(format!("[{}]", formats_files_size)),
+                    VALUE.paint(format!("{}", format_lines_of_code))
+                );
+            }
         })
         .for_each(drop);
 
@@ -47,7 +50,7 @@ fn main() {
             output_vt100::init();
         }
     }
-    
+
     let args: Vec<String> = env::args().collect();
     let formats: Vec<String> = get_formats(&args);
     let files: Vec<String> = get_files(&formats);
