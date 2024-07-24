@@ -17,7 +17,7 @@ fn print_info(files: Vec<String>, formats: Vec<String>) {
 
     println!();
 
-    println!("File number | Size of files | Lines of code");
+    println!("File count | Size of files | Lines of code");
     println!("-------------------------------------------");
 
     // Printing all the file formats, the number of files in that format, and the size of the files combined
