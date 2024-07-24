@@ -27,9 +27,9 @@ fn print_info(files: Vec<String>, formats: Vec<String>) {
             let current_format_files: Vec<String> = filter_files_by_format(&files, format.as_str());
             let formats_files_size = get_size(&current_format_files);
             let format_lines_of_code = get_loc(&current_format_files);
-            let language = Languages::from(&format);
+            let language = Languages::from(format);
 
-            if current_format_files.len() > 0 {
+            if !current_format_files.is_empty() {
                 println!(
                     "{}: {} {} {}",
                     language.get_name(),

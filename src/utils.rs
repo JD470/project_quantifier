@@ -91,7 +91,7 @@ pub fn format_size_bytes(number: usize) -> String {
         format!(
             "{:.2}{}",
             (number as f64) / 1024f64.powf(biggest_name as f64),
-            size_names[biggest_name as usize]
+            size_names[biggest_name]
         )
     }
 }

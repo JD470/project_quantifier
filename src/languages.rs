@@ -14,13 +14,13 @@ pub enum Languages {
     Batch,
     C,
     CHeader,
-    CPP,
+    Cpp,
     CPPHeader,
 }
 
 impl Languages {
-    pub fn from(format: &String) -> Self {
-        match format.as_str() {
+    pub fn from(format: &str) -> Self {
+        match format {
             ".md" => Languages::Markdown,
             ".rs" => Languages::Rust,
             ".js" => Languages::Javascript,
@@ -33,7 +33,7 @@ impl Languages {
             ".bat" => Languages::Batch,
             ".c" | ".cc" => Languages::C,
             ".h" | ".hh" => Languages::CHeader,
-            ".cpp" => Languages::CPP,
+            ".cpp" => Languages::Cpp,
             ".hpp" => Languages::CPPHeader,
             _ => Languages::None,
         }
@@ -53,7 +53,7 @@ impl Languages {
             Self::Batch => "Batch Script",
             Self::C => "C",
             Self::CHeader => "C Header",
-            Self::CPP => "C++",
+            Self::Cpp => "C++",
             Self::CPPHeader => "C++ Header",
             Self::None => "Other",
         }
