@@ -1,3 +1,4 @@
+mod languages;
 mod utils;
 
 use utils::*;
@@ -46,7 +47,7 @@ fn main() {
             output_vt100::init();
         }
     }
-
+    
     let args: Vec<String> = env::args().collect();
     let formats: Vec<String> = get_formats(&args);
     let files: Vec<String> = get_files(&formats);

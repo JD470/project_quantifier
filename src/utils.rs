@@ -1,7 +1,9 @@
-use std::fs;
+use std::{fs, path::PathBuf};
 
 use ansi_term::Color;
 use jwalk::WalkDir;
+
+use crate::languages::Languages;
 
 pub const VALUE: Color = Color::RGB(0, 175, 255);
 pub const WHITE: Color = Color::RGB(255, 255, 255);
@@ -117,14 +119,50 @@ pub fn get_nb_of_files(files: &[String], formats: &[String]) -> Vec<u32> {
 }
 
 pub fn get_files(formats: &[String]) -> Vec<String> {
-    WalkDir::new(".")
-        .into_iter()
-        .filter(|project_folder| {
-            let name = project_folder.as_ref().unwrap().path();
+    let languages: Vec<Languages> = formats
+        .iter()
+        .map(|a| Languages::from(a.to_string()))
+        .collect();
 
-            formats.iter().any(|format| name.to_str().unwrap().ends_with(format))
+    let mut first_depth_files: Vec<PathBuf> = WalkDir::new(".")
+        .max_depth(1)
+        .into_iter()
+        .filter_map(|entry| entry.ok())
+        .filter(|entry| entry.file_type.is_file())
+        .map(|file| file.path())
+        .collect();
+
+    let first_depth_folders: Vec<PathBuf> = WalkDir::new(".")
+        .max_depth(1)
+        .into_iter()
+        .skip(1) // Skip "./"
+        .filter_map(|entry| entry.ok())
+        .filter(|entry| entry.file_type.is_dir())
+        .filter(|folder| {
+            languages
+                .iter()
+                .any(|language| language.exclude_file(folder.path()))
         })
-        .map(|file| file.unwrap().path().to_str().unwrap().to_string())
+        .map(|folder| folder.path())
+        .collect();
+
+    first_depth_files.extend(first_depth_folders.iter().flat_map(|folder| {
+        WalkDir::new(folder)
+            .into_iter()
+            .filter_map(|entry| entry.ok())
+            .filter(|entry| entry.file_type.is_file())
+            .map(|file| file.path())
+            .collect::<Vec<PathBuf>>()
+    }));
+
+    first_depth_files
+        .iter()
+        .filter(|file| {
+            formats
+                .iter()
+                .any(|format| file.to_str().unwrap().ends_with(format))
+        })
+        .map(|file| file.to_str().unwrap().to_string())
         .collect()
 }
 
