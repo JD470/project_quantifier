@@ -113,6 +113,7 @@ pub fn get_files(formats: &[String]) -> Vec<String> {
         .collect();
 
     let mut first_depth_files: Vec<PathBuf> = WalkDir::new(".")
+        .parallelism(jwalk::Parallelism::Serial)
         .max_depth(1)
         .into_iter()
         .filter_map(|entry| entry.ok())
@@ -121,6 +122,7 @@ pub fn get_files(formats: &[String]) -> Vec<String> {
         .collect();
 
     let first_depth_folders: Vec<PathBuf> = WalkDir::new(".")
+        .parallelism(jwalk::Parallelism::Serial)
         .max_depth(1)
         .into_iter()
         .skip(1) // Skip "./"
@@ -129,13 +131,14 @@ pub fn get_files(formats: &[String]) -> Vec<String> {
         .filter(|folder| {
             languages
                 .iter()
-                .any(|language| language.exclude_file(folder.path()))
+                .any(|language| language.exclude_directory(folder.path()))
         })
         .map(|folder| folder.path())
         .collect();
 
     first_depth_files.extend(first_depth_folders.iter().flat_map(|folder| {
         WalkDir::new(folder)
+            .parallelism(jwalk::Parallelism::Serial)
             .into_iter()
             .filter_map(|entry| entry.ok())
             .filter(|entry| entry.file_type.is_file())
@@ -143,15 +146,13 @@ pub fn get_files(formats: &[String]) -> Vec<String> {
             .collect::<Vec<PathBuf>>()
     }));
 
-    first_depth_files
-        .iter()
-        .filter(|file| {
-            formats
-                .iter()
-                .any(|format| file.to_str().unwrap().ends_with(format))
-        })
-        .map(|file| file.to_str().unwrap().to_string())
-        .collect()
+    unsafe {
+        first_depth_files
+            .iter()
+            .map(|file| file.to_str().unwrap_unchecked().to_string())
+            .filter(|file| formats.iter().any(|format| file.ends_with(format)))
+            .collect()
+    }
 }
 
 pub fn get_formats(args: &[String]) -> Vec<String> {

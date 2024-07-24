@@ -60,7 +60,7 @@ impl Languages {
         .to_string()
     }
 
-    pub fn exclude_file(&self, path: PathBuf) -> bool {
+    pub fn exclude_directory(&self, path: PathBuf) -> bool {
         !match self {
             Languages::Rust => path.starts_with(".\\target"),
             Languages::Javascript | Languages::Typescript => path.starts_with(".\\node_modules"),
