@@ -4,7 +4,7 @@ mod utils;
 use languages::Languages;
 use utils::*;
 
-use std::{env, time::Instant};
+use std::env;
 
 /// Print the information about the files in the project
 fn print_info(files: Vec<String>, formats: Vec<String>) {
@@ -52,11 +52,9 @@ fn main() {
         }
     }
 
-    let a = Instant::now();
     let args: Vec<String> = env::args().collect();
     let formats: Vec<String> = get_formats(&args);
     let files: Vec<String> = get_files(&formats);
 
     print_info(files, formats);
-    println!("{:?}", Instant::now() - a);
 }
