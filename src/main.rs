@@ -4,7 +4,7 @@ mod utils;
 use languages::Languages;
 use utils::*;
 
-use std::env;
+use std::{env, time::Instant};
 
 /// Print the information about the files in the project
 fn print_info(files: Vec<String>, formats: Vec<String>) {
@@ -14,6 +14,7 @@ fn print_info(files: Vec<String>, formats: Vec<String>) {
     println!("{}", WHITE.bold().paint("[Project Quantifier]"));
     println!("Lines of code: {}", VALUE.paint(lines.to_string()));
     println!("Code size: {}", VALUE.paint(size.to_string()));
+    println!("File count: {}", VALUE.paint(files.len().to_string()));
 
     println!();
 
@@ -51,9 +52,11 @@ fn main() {
         }
     }
 
+    let a = Instant::now();
     let args: Vec<String> = env::args().collect();
     let formats: Vec<String> = get_formats(&args);
     let files: Vec<String> = get_files(&formats);
 
     print_info(files, formats);
+    println!("{:?}", Instant::now() - a);
 }

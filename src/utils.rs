@@ -1,4 +1,7 @@
-use std::{fs, path::PathBuf};
+use std::{
+    fs::{self, File},
+    path::PathBuf,
+};
 
 use ansi_term::Color;
 use jwalk::WalkDir;
@@ -13,26 +16,27 @@ fn count_lines(text: String) -> usize {
     let mut multiline_comment = false;
 
     for line in text.lines().map(|line| line.trim()) {
-        if multiline_comment && !contains_string(line, "*/") {
-            continue;
-        } else if multiline_comment && contains_string(line, "*/") {
-            multiline_comment = false
-        }
-
         if line.is_empty() {
             continue;
         }
+
         if line.starts_with("//") || line.starts_with('#') {
             continue;
         }
+
+        if multiline_comment {
+            if contains_string(line, "*/") {
+                multiline_comment = false;
+            }
+            continue;
+        }
+
         if contains_string(line, "/*") && !multiline_comment {
             multiline_comment = true;
             continue;
         }
 
-        if !multiline_comment {
-            lines += 1;
-        }
+        lines += 1;
     }
 
     lines
@@ -41,32 +45,35 @@ fn count_lines(text: String) -> usize {
 fn contains_string(text: &str, needle: &str) -> bool {
     let mut start = 0;
     let mut in_string = false;
-    let mut parts: Vec<String> = Vec::new();
 
     for (i, c) in text.chars().enumerate() {
-        if in_string && (c == '\"' || c == '\'') {
-            in_string = !in_string;
-            start = i;
+        if !(c == '\"' || c == '\'') {
             continue;
         }
-        if !in_string && (c == '\"' || c == '\'') {
-            in_string = !in_string;
-            start = i;
-            parts.push(text[start..i].to_string());
+
+        in_string = !in_string;
+        start = i;
+
+        if in_string {
             continue;
+        }
+
+        if text[start..i].contains(needle) {
+            return true;
         }
     }
 
-    parts.push(text[start..text.len()].to_string());
-    parts.concat().contains(needle)
+    text[start..text.len()].contains(needle)
 }
 
 /// Get lines of code
 pub fn get_loc(files: &[String]) -> usize {
     let mut lines: usize = 0;
-    for file in files {
-        let file = fs::read_to_string(file);
-        lines += count_lines(file.unwrap());
+    unsafe {
+        for file in files {
+            let file = fs::read_to_string(file).unwrap_unchecked();
+            lines += count_lines(file);
+        }
     }
     lines
 }
@@ -99,18 +106,21 @@ pub fn format_size_bytes(number: usize) -> String {
 /// Get the number of characters in all the files
 pub fn get_size(files: &[String]) -> String {
     let mut size = 0;
-    for file in files {
-        size += fs::read_to_string(file).unwrap().len();
+    unsafe {
+        for file in files {
+            size += File::open(file)
+                .unwrap_unchecked()
+                .metadata()
+                .unwrap_unchecked()
+                .len() as usize;
+        }
     }
 
     format_size_bytes(size)
 }
 
 pub fn get_files(formats: &[String]) -> Vec<String> {
-    let languages: Vec<Languages> = formats
-        .iter()
-        .map(|a| Languages::from(&a.to_string()))
-        .collect();
+    let languages: Vec<Languages> = formats.iter().map(|a| Languages::from(&a)).collect();
 
     let mut first_depth_files: Vec<PathBuf> = WalkDir::new(".")
         .parallelism(jwalk::Parallelism::Serial)
@@ -157,9 +167,8 @@ pub fn get_files(formats: &[String]) -> Vec<String> {
 
 pub fn get_formats(args: &[String]) -> Vec<String> {
     args.iter()
-        .enumerate()
-        .filter(|(index, _)| *index >= 1)
-        .map(|(_, format)| format.to_string())
+        .skip(1)
+        .map(|format| format.to_owned())
         .collect()
 }
 
