@@ -47,31 +47,31 @@ fn contains_string(text: &str, needle: &str) -> bool {
     let mut in_string = false;
 
     for (i, c) in text.chars().enumerate() {
-        if !(c == '\"' || c == '\'') {
+        if !(c == '\"' || c == '\'') && in_string {
             continue;
         }
 
         in_string = !in_string;
         start = i;
 
-        if in_string {
-            continue;
-        }
-
-        if text[start..i].contains(needle) {
-            return true;
+        if let Some(slice) = text.get(start..i) {
+            if slice.contains(needle) {
+                return true;
+            }
         }
     }
 
-    text[start..text.len()].contains(needle)
+    match text.get(start..text.len()) {
+        Some(slice) => slice.contains(needle),
+        _ => false,
+    }
 }
 
 /// Get lines of code
 pub fn get_loc(files: &[String]) -> usize {
     let mut lines: usize = 0;
-    unsafe {
-        for file in files {
-            let file = fs::read_to_string(file).unwrap_unchecked();
+    for file in files {
+        if let Ok(file) = fs::read_to_string(file) {
             lines += count_lines(file);
         }
     }
@@ -120,7 +120,7 @@ pub fn get_size(files: &[String]) -> String {
 }
 
 pub fn get_files(formats: &[String]) -> Vec<String> {
-    let languages: Vec<Languages> = formats.iter().map(|a| Languages::from(&a)).collect();
+    let languages: Vec<Languages> = formats.iter().map(|a| Languages::from(a)).collect();
 
     let mut first_depth_files: Vec<PathBuf> = WalkDir::new(".")
         .parallelism(jwalk::Parallelism::Serial)
