@@ -82,11 +82,11 @@ pub fn get_loc(files: &[String]) -> usize {
 ///
 /// Example:
 ///
-/// 1 000 = 1.00KB
+/// 1 024 = 1.00KB
 ///
-/// 1 000 000 = 1.00MB
+/// 1 024 000 = 1.00MB
 ///
-/// 1 000 000 000 = 1.00GB
+/// 1 024 000 000 = 1.00GB
 ///
 pub fn format_size_bytes(number: usize) -> String {
     let size_names: Vec<&str> = vec!["B", "KB", "MB", "GB"];
