@@ -124,7 +124,6 @@ pub fn get_files(formats: &[String]) -> Vec<String> {
 
     let mut first_depth_files: Vec<PathBuf> = WalkDir::new(".")
         .parallelism(jwalk::Parallelism::Serial)
-        .max_depth(1)
         .into_iter()
         .filter_map(|entry| entry.ok())
         .filter(|entry| entry.file_type.is_file())
@@ -133,9 +132,8 @@ pub fn get_files(formats: &[String]) -> Vec<String> {
 
     let first_depth_folders: Vec<PathBuf> = WalkDir::new(".")
         .parallelism(jwalk::Parallelism::Serial)
-        .max_depth(1)
         .into_iter()
-        .skip(1) // Skip "./"
+        .skip(1) // Skip root folder
         .filter_map(|entry| entry.ok())
         .filter(|entry| entry.file_type.is_dir())
         .filter(|folder| {
